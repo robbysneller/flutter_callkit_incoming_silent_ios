@@ -334,6 +334,30 @@ public class SwiftFlutterCallkitIncomingPlugin: NSObject, FlutterPlugin, CXProvi
         self.callManager.endCallAlls()
     }
     
+    public func reportNewIncomingCall(_ data: Data) {
+        var handle: CXHandle?
+        handle = CXHandle(type: self.getHandleType(data.handleType), value: data.getEncryptHandle())
+        
+        let callUpdate = CXCallUpdate()
+        callUpdate.remoteHandle = handle
+        callUpdate.supportsDTMF = data.supportsDTMF
+        callUpdate.supportsHolding = data.supportsHolding
+        callUpdate.supportsGrouping = data.supportsGrouping
+        callUpdate.supportsUngrouping = data.supportsUngrouping
+        callUpdate.hasVideo = false
+        callUpdate.localizedCallerName = data.nameCaller
+        
+        initCallkitProvider(data)
+        
+        let uuid = UUID(uuidString: data.uuid)
+        
+        self.sharedProvider?.reportNewIncomingCall(with: uuid!, update: callUpdate) { error in
+            if(error == nil) {
+                print("reported the call but not doing anything else")
+            }
+        }
+    }
+    
     public func saveEndCall(_ uuid: String, _ reason: Int) {
         switch reason {
         case 1:
